@@ -15,30 +15,18 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def perform_destroy(self, instance):
-        instance.delete()
-
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthorOrReadOnly, IsAuthenticated]
 
     def get_queryset(self):
-        return get_object_or_404(Post,
-                                 pk=self.kwargs.get('post_id')).comments.all()
+        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+        return post.comments.all()
 
     def perform_create(self, serializer):
         post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
         serializer.save(author=self.request.user, post=post)
-        return super().perform_create(serializer)
-
-    def perform_update(self, serializer):
-        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
-        serializer.save(author=self.request.user, post=post)
-        return super().perform_update(serializer)
-
-    def perform_destroy(self, instance):
-        instance.delete()
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
